@@ -15,8 +15,7 @@ class AuthProvider with ChangeNotifier {
   static const String _userKey = 'user_data';
   final GoogleSignIn _googleSignIn = GoogleSignIn(
     scopes: ['email', 'profile'],
-    clientId:
-        '42959912450-2vtkro05bddrc4b1u6m3bd2kk292jsrn.apps.googleusercontent.com',
+    clientId: '42959912450-9rddqel4hr9cjg2k2046opee4bn1c50r.apps.googleusercontent.com',
   );
 
   bool get isAuthenticated => _isAuthenticated;
