@@ -1,3 +1,4 @@
+import 'package:flutter_video_app/providers/auth_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:video_player/video_player.dart';
 import 'package:chewie/chewie.dart';
@@ -16,7 +17,7 @@ class PlayerScreen extends StatefulWidget {
 }
 
 class _PlayerScreenState extends State<PlayerScreen> {
-  late VideoPlayerController _videoPlayerController;
+  VideoPlayerController? _videoPlayerController;
   ChewieController? _chewieController;
   bool _isLoading = true;
   bool _hasError = false;
@@ -29,17 +30,27 @@ class _PlayerScreenState extends State<PlayerScreen> {
   }
 
   Future<void> _initializePlayer() async {
+    final authProvider = Provider.of<AuthProvider>(context, listen: false);
+    final bool isSubscribed = authProvider.hasActiveSubscription;
+
+    if (!isSubscribed) {
+      setState(() {
+        _isLoading = false;
+      });
+      return;
+    }
+
     try {
       _videoPlayerController = VideoPlayerController.networkUrl(
         Uri.parse(widget.video.videoUrl),
       );
-      await _videoPlayerController.initialize();
+      await _videoPlayerController!.initialize();
 
       _chewieController = ChewieController(
-        videoPlayerController: _videoPlayerController,
+        videoPlayerController: _videoPlayerController!,
         autoPlay: true,
         looping: false,
-        aspectRatio: _videoPlayerController.value.aspectRatio,
+        aspectRatio: _videoPlayerController!.value.aspectRatio,
         errorBuilder: (context, errorMessage) {
           return Center(
             child: Text(
@@ -99,7 +110,7 @@ class _PlayerScreenState extends State<PlayerScreen> {
 
   @override
   void dispose() {
-    _videoPlayerController.dispose();
+    _videoPlayerController?.dispose();
     _chewieController?.dispose();
     super.dispose();
   }
@@ -108,7 +119,7 @@ class _PlayerScreenState extends State<PlayerScreen> {
   Widget build(BuildContext context) {
     return WillPopScope(
       onWillPop: () async {
-        final position = await _videoPlayerController.position;
+        final position = await _videoPlayerController?.position;
         print('Video stopped at position: ${position?.inSeconds} seconds');
 
         // Add to watch history when user has watched at least 30 seconds
@@ -154,6 +165,32 @@ class _PlayerScreenState extends State<PlayerScreen> {
   }
 
   Widget _buildVideoPlayer() {
+    final authProvider = Provider.of<AuthProvider>(context, listen: false);
+    final bool isSubscribed = authProvider.hasActiveSubscription;
+
+    if (!isSubscribed) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Icon(Icons.lock, size: 100, color: Colors.white),
+            const SizedBox(height: 20),
+            const Text(
+              'Subscribe to watch this content',
+              style: TextStyle(color: Colors.white, fontSize: 18),
+            ),
+            const SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.of(context).pushNamed('/subscription');
+              },
+              child: const Text('Subscribe'),
+            ),
+          ],
+        ),
+      );
+    }
+
     if (_isLoading) {
       return const Center(child: CircularProgressIndicator());
     } else if (_hasError) {

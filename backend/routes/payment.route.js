@@ -56,18 +56,13 @@ router.post("/confirm-subscription", protectRoute, async (req, res) => {
   const userId = req.user._id;
 
   try {
-    console.log(`Confirming subscription ${subscriptionId} for user ${userId}`);
+    
 
     // Get subscription details
     const subscription = await getSubscription(subscriptionId);
-    console.log(
-      "Raw subscription data:",
-      JSON.stringify(subscription, null, 2)
-    );
 
     const user = await User.findById(userId);
     if (!user) {
-      console.log("User not found");
       return res.status(404).json({ message: "User not found" });
     }
 
@@ -75,15 +70,15 @@ router.post("/confirm-subscription", protectRoute, async (req, res) => {
     let subscriptionStatus = subscription.status;
     try {
       if (subscription.status === "incomplete" && subscription.latest_invoice) {
-        console.log("Checking latest invoice...");
+        
         const latestInvoice = await stripe.invoices.retrieve(
           subscription.latest_invoice
         );
-        console.log("Latest invoice:", JSON.stringify(latestInvoice, null, 2));
+        
 
         if (latestInvoice.paid) {
           subscriptionStatus = "active";
-          console.log("Invoice is paid, setting status to active");
+          
         }
       }
 
@@ -92,9 +87,7 @@ router.post("/confirm-subscription", protectRoute, async (req, res) => {
         const createdTime = new Date(subscription.created * 1000);
         if (Date.now() - createdTime > 60000) {
           // More than 1 minute old
-          console.log(
-            "Subscription is incomplete and older than 1 minute, checking payment intent..."
-          );
+          
           if (
             subscription.latest_invoice &&
             subscription.latest_invoice.payment_intent
@@ -102,10 +95,10 @@ router.post("/confirm-subscription", protectRoute, async (req, res) => {
             const paymentIntent = await stripe.paymentIntents.retrieve(
               subscription.latest_invoice.payment_intent
             );
-            console.log("Payment intent status:", paymentIntent.status);
+            
             if (paymentIntent.status === "succeeded") {
               subscriptionStatus = "active";
-              console.log("Payment intent succeeded, setting status to active");
+              
             }
           }
         }
@@ -206,8 +199,35 @@ router.post(
       const event = await handleWebhookEvent(rawBody, sig);
 
       switch (event.type) {
+        case "invoice.payment_succeeded": {
+          const invoice = event.data.object;
+          if (invoice.subscription) {
+            const subscription = await stripe.subscriptions.retrieve(
+              invoice.subscription
+            );
+            const user = await User.findOne({
+              stripeCustomerId: subscription.customer,
+            });
+
+            if (user) {
+              user.subscription = {
+                subscriptionId: subscription.id,
+                planId: subscription.items.data[0].price.id,
+                status: subscription.status,
+                currentPeriodEnd: new Date(
+                  subscription.current_period_end * 1000
+                ),
+              };
+              await user.save();
+              console.log(
+                `User ${user.email} subscription updated to ${subscription.status} from invoice.`
+              );
+            }
+          }
+          break;
+        }
         case "customer.subscription.created":
-        case "customer.subscription.updated":
+        case "customer.subscription.updated": {
           const subscription = event.data.object;
           const user = await User.findOne({
             stripeCustomerId: subscription.customer,
@@ -228,6 +248,7 @@ router.post(
             );
           }
           break;
+        }
 
         case "payment_intent.succeeded":
           const paymentIntent = event.data.object;

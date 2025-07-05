@@ -52,7 +52,7 @@ export const getMe = async (req, res) => {
 
 export const getAllUsers = async (req, res) => {
   try {
-    const users = await User.find({ role : "customer"}).populate("subscription");
+    const users = await User.find({ role: "customer" });
     res.status(200).json({
       success: true,
       data: users.map((user) => ({
@@ -63,6 +63,7 @@ export const getAllUsers = async (req, res) => {
         favorites: user.favorites || [],
         stripeCustomerId: user.stripeCustomerId,
         subscription: user.subscription,
+        createdAt: user.createdAt, // <-- include registration date
       })),
     });
   } catch (error) {

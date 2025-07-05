@@ -5,7 +5,7 @@ import 'package:flutter_video_app/models/comment_model.dart' show ReviewModel;
 import 'package:flutter_video_app/models/user_model.dart';
 
 class ApiService {
-  static const String baseUrl = 'http://192.168.116.1:4002/api';
+  static const String baseUrl = 'http://localhost:4002/api';
   static String? _token;
 
   static void setToken(String token) {
@@ -13,7 +13,7 @@ class ApiService {
     _token = token;
   }
 
-  static Map<String, String> get _headers {
+  static Map<String, String> get headers {
     final headers = {
       'Content-Type': 'application/json',
       if (_token != null) 'Authorization': 'Bearer $_token',
@@ -25,7 +25,7 @@ class ApiService {
   static Future<UserModel> login(String email, String password) async {
     final response = await http.post(
       Uri.parse('$baseUrl/auth/login'),
-      headers: _headers,
+      headers: headers,
       body: json.encode({'email': email, 'password': password}),
     );
 
@@ -45,7 +45,7 @@ class ApiService {
   static Future<VideoModel> addMovieByAdmin(VideoModel movie) async {
     final response = await http.post(
       Uri.parse('$baseUrl/movies/admin/movies'),
-      headers: _headers,
+      headers: headers,
       body: json.encode(movie.toJson()),
     );
 
@@ -77,7 +77,7 @@ class ApiService {
     print('Getting movie types...'); // Debug log
     final response = await http.get(
       Uri.parse('$baseUrl/genres'),
-      headers: _headers,
+      headers: headers,
     );
 
     print('Movie types response status: ${response.statusCode}'); // Debug log
@@ -101,7 +101,7 @@ class ApiService {
   ) async {
     final response = await http.post(
       Uri.parse('$baseUrl/auth/signup'),
-      headers: _headers,
+      headers: headers,
       body: json.encode({
         'username': name,
         'email': email,
@@ -134,14 +134,14 @@ class ApiService {
     };
 
     print('Getting videos with params: $queryParams'); // Debug log
-    print('Using headers: ${_headers}'); // Debug log
+    print('Using headers: ${headers}'); // Debug log
 
     final url = Uri.parse(
       '$baseUrl/movies',
     ).replace(queryParameters: queryParams);
     print('Request URL: $url'); // Debug log
 
-    final response = await http.get(url, headers: _headers);
+    final response = await http.get(url, headers: headers);
 
     print('Videos response status: ${response.statusCode}'); // Debug log
     print('Videos response body: ${response.body}'); // Debug log
@@ -165,7 +165,7 @@ class ApiService {
     print('Getting favorites - Token: $_token'); // Debug log
     final response = await http.get(
       Uri.parse('$baseUrl/users/favorites'),
-      headers: _headers,
+      headers: headers,
     );
 
     print('Favorites response status: ${response.statusCode}'); // Debug log
@@ -184,7 +184,7 @@ class ApiService {
   static Future<void> toggleFavorite(String videoId) async {
     final response = await http.post(
       Uri.parse('$baseUrl/users/favorites/$videoId'),
-      headers: _headers,
+      headers: headers,
     );
 
     if (response.statusCode != 200) {
@@ -196,7 +196,7 @@ class ApiService {
   static Future<List<ReviewModel>> getVideoComments(String videoId) async {
     final response = await http.get(
       Uri.parse('$baseUrl/movies/$videoId/comments'),
-      headers: _headers,
+      headers: headers,
     );
 
     if (response.statusCode == 200) {
@@ -216,7 +216,7 @@ class ApiService {
   }) async {
     final response = await http.post(
       Uri.parse('$baseUrl/movies/$videoId/comments'),
-      headers: _headers,
+      headers: headers,
       body: json.encode({
         'comment': comment,
         'rating': rating,
@@ -235,7 +235,7 @@ class ApiService {
     print('Getting current user info...'); // Debug log
     final response = await http.get(
       Uri.parse('$baseUrl/users/me'),
-      headers: _headers,
+      headers: headers,
     );
 
     print(
@@ -256,7 +256,7 @@ class ApiService {
   static Future<List<VideoModel>> getWatchHistory() async {
     final response = await http.get(
       Uri.parse('$baseUrl/users/watch-history'),
-      headers: _headers,
+      headers: headers,
     );
 
     if (response.statusCode == 200) {
@@ -271,7 +271,7 @@ class ApiService {
   static Future<void> addToWatchHistory(String videoId) async {
     final response = await http.post(
       Uri.parse('$baseUrl/users/watch-history/$videoId'),
-      headers: _headers,
+      headers: headers,
     );
 
     if (response.statusCode != 200) {
@@ -282,7 +282,7 @@ class ApiService {
   static Future<void> clearWatchHistory() async {
     final response = await http.delete(
       Uri.parse('$baseUrl/users/watch-history'),
-      headers: _headers,
+      headers: headers,
     );
 
     if (response.statusCode != 200) {
@@ -293,7 +293,7 @@ class ApiService {
   static Future<UserModel> updateUsername(String newUsername) async {
     final response = await http.put(
       Uri.parse('$baseUrl/users/me/username'), // Corrected endpoint
-      headers: _headers,
+      headers: headers,
       body: json.encode({'newUsername': newUsername}),
     );
 
@@ -312,7 +312,7 @@ class ApiService {
   ) async {
     final response = await http.post(
       Uri.parse('$baseUrl/auth/change-password'),
-      headers: _headers,
+      headers: headers,
       body: json.encode({
         'currentPassword': currentPassword,
         'newPassword': newPassword,
@@ -330,7 +330,7 @@ class ApiService {
   ) async {
     final response = await http.post(
       Uri.parse('$baseUrl/auth/google/token'),
-      headers: _headers,
+      headers: headers,
       body: json.encode({'idToken': idToken}),
     );
 
@@ -349,7 +349,7 @@ class ApiService {
     print('Creating payment intent for priceId: $priceId'); // Debug log
     final response = await http.post(
       Uri.parse('$baseUrl/payments/create-subscription'),
-      headers: _headers,
+      headers: headers,
       body: json.encode({'userId': userId, 'priceId': priceId}),
     );
 
@@ -368,7 +368,7 @@ class ApiService {
     print('Confirming subscription: $subscriptionId'); // Debug log
     final response = await http.post(
       Uri.parse('$baseUrl/payments/confirm-subscription'),
-      headers: _headers,
+      headers: headers,
       body: json.encode({'subscriptionId': subscriptionId}),
     );
 
@@ -386,7 +386,7 @@ class ApiService {
     print('Getting subscription status'); // Debug log
     final response = await http.get(
       Uri.parse('$baseUrl/payments/subscription-status'),
-      headers: _headers,
+      headers: headers,
     );
 
     print(
@@ -403,7 +403,7 @@ class ApiService {
   static Future<List<UserModel>> getAllUsers() async {
     final response = await http.get(
       Uri.parse('$baseUrl/users/admin/users/'),
-      headers: _headers,
+      headers: headers,
     );
 
     if (response.statusCode == 200) {
@@ -422,7 +422,7 @@ class ApiService {
     print('Getting current user info'); // Debug log
     final response = await http.get(
       Uri.parse('$baseUrl/users/me'),
-      headers: _headers,
+      headers: headers,
     );
 
     print('Get me response status: ${response.statusCode}'); // Debug log
@@ -433,5 +433,34 @@ class ApiService {
       return UserModel.fromJson(data['data'] as Map<String, dynamic>);
     }
     return null;
+  }
+
+  static Future<Map<String, dynamic>> createSubscription(String priceId) async {
+    final response = await http.post(
+      Uri.parse('$baseUrl/payments/create-subscription'),
+      headers: headers,
+      body: json.encode({'priceId': priceId}),
+    );
+
+    if (response.statusCode == 200) {
+      final data = json.decode(response.body);
+      return data;
+    }
+    throw _handleError(response);
+  }
+
+  static Future<Map<String, dynamic>> createCheckoutSession(
+    String priceId,
+  ) async {
+    final response = await http.post(
+      Uri.parse('$baseUrl/payments/create-checkout-session'),
+      headers: headers,
+      body: json.encode({'priceId': priceId}),
+    );
+
+    if (response.statusCode == 200) {
+      return json.decode(response.body);
+    }
+    throw _handleError(response);
   }
 }

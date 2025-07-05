@@ -6,7 +6,8 @@ import moviesRoutes from "./routes/movie.route.js";
 import authRoutes from "./routes/auth.route.js";
 import userRoutes from "./routes/user.route.js";
 import genreRoutes from "./routes/genre.route.js";
-import paymentRoutes from './routes/payment.route.js';
+import paymentRoutes from "./routes/payment.route.js";
+import adminRoutes from "./routes/admin.route.js";
 import passport from "./config/passport-setup.js";
 import mongoose from "mongoose";
 
@@ -14,11 +15,7 @@ import mongoose from "mongoose";
 dotenv.config();
 
 // Validate required environment variables
-const requiredEnvVars = [
-  "MONGO_URI",
-  "JWT_SECRET",
-  "GOOGLE_CLIENT_ID",
-];
+const requiredEnvVars = ["MONGO_URI", "JWT_SECRET", "GOOGLE_CLIENT_ID"];
 
 const missingEnvVars = requiredEnvVars.filter((envVar) => !process.env[envVar]);
 if (missingEnvVars.length > 0) {
@@ -41,7 +38,7 @@ const PORT = process.env.PORT || 4002;
 // CORS configuration
 app.use(
   cors({
-    origin: process.env.FRONTEND_URL || "http://localhost:49925",
+    origin: process.env.FRONTEND_URL || "http://localhost:55540",
     credentials: true,
   })
 );
@@ -65,7 +62,8 @@ app.use("/api/auth", authRoutes);
 app.use("/api/movies", moviesRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/genres", genreRoutes);
-app.use('/api/payments', paymentRoutes);
+app.use("/api/payments", paymentRoutes);
+app.use("/api/admin", adminRoutes);
 
 // Error handling middleware
 app.use((err, req, res, next) => {
@@ -89,7 +87,7 @@ const startServer = async () => {
       console.log("=================================");
       console.log(`Server Running on Port: ${PORT}`);
       console.log(
-        `Frontend URL: ${process.env.FRONTEND_URL || "http://localhost:49925"}`
+        `Frontend URL: ${process.env.FRONTEND_URL || "http://localhost:55540"}`
       );
       console.log("=================================");
     });

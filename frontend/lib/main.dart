@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:provider/provider.dart';
 import 'dart:async';
 import 'package:flutter_video_app/providers/auth_provider.dart';
@@ -14,14 +15,30 @@ import 'package:flutter_stripe/flutter_stripe.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  Stripe.publishableKey =
-      'pk_test_51RY4uWFJqSjpkwgibRAHFiYNTc4eNQGFOT9dJqy2SMaDXCmEqpPLREjn8tzwljV20rlbMj0CoxZZA2sO2JGAaK4X00TQgsctYR';
-  await Stripe.instance.applySettings();
 
-  if (Platform.isAndroid) {
-    await GoogleSignIn().signOut();
-    GoogleSignIn.standard();
+  if (!kIsWeb) {
+    // Initialize Stripe
+    Stripe.publishableKey =
+        'pk_test_51RY4uWFJqSjpkwgibRAHFiYNTc4eNQGFOT9dJqy2SMaDXCmEqpPLREjn8tzwljV20rlbMj0CoxZZA2sO2JGAaK4X00TQgsctYR';
+
+    try {
+      await Stripe.instance.applySettings();
+    } catch (e) {
+      print('Stripe initialization error (expected on web): $e');
+      // Continue execution as web platform may not support all Stripe features
+    }
   }
+
+  // Initialize Google Sign In based on platform
+  try {
+    if (!kIsWeb && Platform.isAndroid) {
+      await GoogleSignIn().signOut();
+      GoogleSignIn.standard();
+    }
+  } catch (e) {
+    print('Platform check error (expected on web): $e');
+  }
+
   runApp(const MyApp());
 }
 

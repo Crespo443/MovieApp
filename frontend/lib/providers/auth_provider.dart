@@ -16,7 +16,7 @@ class AuthProvider with ChangeNotifier {
   final GoogleSignIn _googleSignIn = GoogleSignIn(
     scopes: ['email', 'profile'],
     clientId:
-        '42959912450-2vtkro05bddrc4b1u6m3bd2kk292jsrn.apps.googleusercontent.com',
+        '691591263305-dvj43rlep1r23glokirac90qe9i92kii.apps.googleusercontent.com',
   );
 
   bool get isAuthenticated => _isAuthenticated;

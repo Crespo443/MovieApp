@@ -11,6 +11,7 @@ import 'package:flutter_video_app/widgets/video_row.dart';
 import 'package:flutter_video_app/widgets/featured_banner_carousel.dart';
 import 'package:flutter_video_app/widgets/video_card.dart';
 import 'package:flutter_video_app/utils/constants.dart';
+import 'package:flutter_video_app/screens/admin_dashboard_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -504,6 +505,20 @@ class _HomeScreenState extends State<HomeScreen> {
                 );
               },
             ),
+            if (authProvider.user?.role == 'admin')
+              ListTile(
+                leading: const Icon(Icons.admin_panel_settings),
+                title: const Text('Admin Dashboard'),
+                onTap: () {
+                  Navigator.pop(context);
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const AdminDashboardScreen(),
+                    ),
+                  );
+                },
+              ),
             ListTile(
               leading: const Icon(Icons.logout),
               title: const Text('Logout'),

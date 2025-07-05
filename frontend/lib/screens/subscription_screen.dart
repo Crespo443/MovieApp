@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_video_app/providers/auth_provider.dart';
 import 'package:flutter_video_app/services/api_service.dart';
 import 'package:flutter_stripe/flutter_stripe.dart' hide Card;
+import 'package:flutter_video_app/utils/js_stub.dart'
+    if (dart.library.js) 'dart:js'
+    as js;
 
-// <-- FIX: Data model for type safety
 class Plan {
   final String id;
   final String stripePriceId;
@@ -31,10 +34,11 @@ class SubscriptionScreen extends StatefulWidget {
 }
 
 class _SubscriptionScreenState extends State<SubscriptionScreen> {
-  Plan? _selectedPlan; // <-- FIX: Use the Plan object for state
+  Plan? _selectedPlan;
   bool _isLoading = false;
 
-  // <-- FIX: Use the Plan model. Replace with your actual Stripe Price IDs!
+  
+
   final List<Plan> _plans = [
     Plan(
       id: 'basic',
@@ -61,97 +65,68 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
     print('Selected plan: ${plan.name}');
   }
 
-  Future<void> _initiatePayment(Plan plan) async {
-    setState(() {
-      _isLoading = true;
-    });
+  Future<void> _handlePayment(Plan plan) async {
+    setState(() => _isLoading = true);
     ScaffoldMessenger.of(context).hideCurrentSnackBar();
-
     try {
-      // Get the current user from your AuthProvider
-      final currentUser = await ApiService.getMe();
-      if (currentUser == null) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Error: User not logged in.')),
+      if (kIsWeb) {
+        // Web: Use Stripe Checkout session
+        final response = await ApiService.createCheckoutSession(
+          plan.stripePriceId,
         );
-        setState(() {
-          _isLoading = false;
-        });
-        return;
-      }
-      final userId = currentUser.id;
-
-      // Create subscription and get payment intent
-      final Map<String, dynamic> response =
-          await ApiService.createPaymentIntent(userId, plan.stripePriceId);
-
-      final String? clientSecret = response['clientSecret'] as String?;
-      final String? subscriptionId = response['subscriptionId'] as String?;
-
-      if (clientSecret == null || clientSecret.isEmpty) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text(
-              'Error: Could not retrieve payment details from server.',
+        if (response['url'] != null) {
+          js.context.callMethod('open', [response['url']]);
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Please complete your payment in the new tab.'),
+              duration: Duration(seconds: 8),
             ),
+          );
+        } else {
+          throw Exception('Stripe Checkout URL not received.');
+        }
+      } else {
+        // Mobile: Use native Stripe SDK
+        final result = await ApiService.createSubscription(
+          plan.stripePriceId,
+        );
+        final clientSecret = result['clientSecret'];
+        final subscriptionId = result['subscriptionId'];
+
+        await Stripe.instance.initPaymentSheet(
+          paymentSheetParameters: SetupPaymentSheetParameters(
+            paymentIntentClientSecret: clientSecret,
+            merchantDisplayName: 'Movie App',
+            style: ThemeMode.dark,
           ),
         );
-        setState(() {
-          _isLoading = false;
-        });
-        return;
-      }
+        await Stripe.instance.presentPaymentSheet();
 
-      // Initialize payment sheet
-      await Stripe.instance.initPaymentSheet(
-        paymentSheetParameters: SetupPaymentSheetParameters(
-          paymentIntentClientSecret: clientSecret,
-          merchantDisplayName: 'Movie App',
-          customerId: response['customerId'] as String?,
-          customerEphemeralKeySecret: response['ephemeralKey'] as String?,
-        ),
-      ); // Present payment sheet and wait for result
-      await Stripe.instance.presentPaymentSheet();
-
-      // Confirm subscription after successful payment
-      if (subscriptionId != null) {
+        // Confirm the subscription on the backend
         await ApiService.confirmSubscription(subscriptionId);
+
+        // Refresh user data to update subscription status
+        await Provider.of<AuthProvider>(
+          context,
+          listen: false,
+        ).refreshUserData();
+        if (mounted) {
+          Navigator.of(context).pop();
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Thank you for subscribing to ${plan.name}!'),
+            ),
+          );
+        }
       }
-
-      // Refresh user data to get updated subscription status
-      await Provider.of<AuthProvider>(context, listen: false).refreshUserData();
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Payment successful! Your ${plan.name} is now active.'),
-          duration: const Duration(seconds: 4),
-        ),
-      );
-
-      // Navigate back or to home screen after successful subscription
-      if (mounted) {
-        Navigator.of(context).pop();
-      }
-    } on StripeException catch (e) {
-      print('StripeException: ${e.toString()}');
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            'Payment Error: ${e.error.message ?? 'An unknown error occurred'}',
-          ),
-        ),
-      );
     } catch (e) {
-      print('Error during payment: ${e.toString()}');
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('An unexpected error occurred: ${e.toString()}'),
-        ),
-      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Payment error: ${e.toString()}')),
+        );
+      }
     } finally {
-      setState(() {
-        _isLoading = false;
-      });
+      if (mounted) setState(() => _isLoading = false);
     }
   }
 
@@ -201,7 +176,7 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
                         ? null
                         : () {
                           if (_selectedPlan != null) {
-                            _initiatePayment(_selectedPlan!);
+                            _handlePayment(_selectedPlan!);
                           }
                         },
                 label: const Text('Proceed to Payment'),

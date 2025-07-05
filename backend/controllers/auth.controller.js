@@ -107,8 +107,6 @@ export const verifyGoogleToken = async (req, res) => {
 
     // Find or create user
     let user = await User.findOne({ googleId });
-    console.log("Google payload:", payload);
-    console.log("Display name from Google:", displayName);
     if (user) {
       // User found with googleId, log them in
       const token = generateToken(user._id);

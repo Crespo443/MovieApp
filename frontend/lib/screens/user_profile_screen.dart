@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_video_app/providers/auth_provider.dart';
@@ -156,17 +157,12 @@ class _ProfilePageState extends State<ProfilePage> {
                             String planName = _getPlanName(
                               subscription?.planId,
                             );
-                            String statusText =
-                                subscription?.status?.toUpperCase() ??
-                                'NO SUBSCRIPTION';
                             String endDateText =
                                 subscription?.currentPeriodEnd != null
                                     ? DateFormat(
                                       'dd MMM yyyy',
                                     ).format(subscription!.currentPeriodEnd!)
                                     : 'N/A';
-                            String subscriptionIdText =
-                                subscription?.subscriptionId ?? 'N/A';
 
                             return Container(
                               padding: const EdgeInsets.all(16),
@@ -226,21 +222,9 @@ class _ProfilePageState extends State<ProfilePage> {
                                     ),
                                     const SizedBox(height: 8),
                                     _buildSubscriptionDetail(
-                                      'Status',
-                                      statusText,
-                                      Icons.info_outline,
-                                    ),
-                                    const SizedBox(height: 8),
-                                    _buildSubscriptionDetail(
                                       'Renewal',
                                       endDateText,
                                       Icons.event_repeat,
-                                    ),
-                                    const SizedBox(height: 8),
-                                    _buildSubscriptionDetail(
-                                      'ID',
-                                      subscriptionIdText,
-                                      Icons.confirmation_number_outlined,
                                     ),
                                   ] else
                                     Text(
@@ -825,9 +809,8 @@ class _ProfilePageState extends State<ProfilePage> {
 
   String _getPlanName(String? planId) {
     return {
-          'price_1OXST2Htj6wIa7rMQDz2GAxc': 'Basic Plan (720p)',
-          'price_1OXST2Htj6wIa7rMoYlgA7Bm': 'Premium Plan (1080p)',
-          'price_1OXSUAHtj6wIa7rMPmeNgqkx': 'Pro Plan (4K + HDR)',
+          'price_1RYDjQFJqSjpkwgi7LpWIYfj': 'Basic Plan (720p)',
+          'price_1RYDgNFJqSjpkwgim7nwsQ4F': 'Premium Plan (1080p)',
         }[planId ?? ''] ??
         'Unknown Plan';
   }
@@ -965,11 +948,18 @@ class WatchHistorySection extends StatelessWidget {
                               children: [
                                 ClipRRect(
                                   borderRadius: BorderRadius.circular(12),
-                                  child: Image.network(
-                                    item.thumbnailUrl,
+                                  child: CachedNetworkImage(
+                                    imageUrl: item.thumbnailUrl,
                                     width: 120,
                                     height: 80,
                                     fit: BoxFit.cover,
+                                    placeholder:
+                                        (context, url) => const Center(
+                                          child: CircularProgressIndicator(),
+                                        ),
+                                    errorWidget:
+                                        (context, url, error) =>
+                                            const Icon(Icons.error),
                                   ),
                                 ),
                                 Positioned(

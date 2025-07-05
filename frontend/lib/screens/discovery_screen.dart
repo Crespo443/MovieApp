@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_video_app/models/video_model.dart';
 import 'package:flutter_video_app/services/api_service.dart';
@@ -237,19 +238,16 @@ class _DiscoveryScreenState extends State<DiscoveryScreen> {
               fit: StackFit.expand,
               children: [
                 if (hasImage && movie != null)
-                  Image.network(
-                    movie.posterPath,
+                  CachedNetworkImage(
+                    imageUrl: movie.posterPath,
                     fit: BoxFit.cover,
-                    loadingBuilder: (context, child, loadingProgress) {
-                      if (loadingProgress == null) return child;
-                      return const Center(
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2.0,
-                          color: Colors.white54,
-                        ),
-                      );
-                    },
-                    errorBuilder: (context, error, stackTrace) {
+                    placeholder: (context, url) => const Center(
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2.0,
+                        color: Colors.white54,
+                      ),
+                    ),
+                    errorWidget: (context, url, error) {
                       print('Error loading image: $error');
                       return const SizedBox.shrink();
                     },

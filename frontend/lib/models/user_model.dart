@@ -46,6 +46,7 @@ class UserModel {
   final String? googleId;
   final String? stripeCustomerId; // New field
   final SubscriptionDetails? subscription; // New field
+  final DateTime? createdAt;
 
   UserModel({
     required this.id,
@@ -57,6 +58,7 @@ class UserModel {
     this.googleId,
     this.stripeCustomerId, // Added to constructor
     this.subscription, // Added to constructor
+    this.createdAt,
   });
 
   factory UserModel.fromJson(Map<String, dynamic> json) {
@@ -81,6 +83,10 @@ class UserModel {
                 json['subscription'] as Map<String, dynamic>,
               )
               : null, // Parsing new field
+      createdAt:
+          json['createdAt'] != null
+              ? DateTime.tryParse(json['createdAt'] as String)
+              : null,
     );
   }
 
@@ -101,6 +107,9 @@ class UserModel {
     }
     if (subscription != null) {
       data['subscription'] = subscription!.toJson(); // Adding new field
+    }
+    if (createdAt != null) {
+      data['createdAt'] = createdAt!.toIso8601String();
     }
     return data;
   }

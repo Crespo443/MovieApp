@@ -22,12 +22,6 @@ export const getAllMovies = async (req, res) => {
     const loadAll = req.query.loadAll === "true";
 
     let query = {};
-    console.log("Received query params:", {
-      searchQuery,
-      categoryQuery,
-      filterType,
-      loadAll,
-    });
 
     if (searchQuery) {
       query.$or = [
