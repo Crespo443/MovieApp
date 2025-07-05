@@ -11,10 +11,8 @@ import adminRoutes from "./routes/admin.route.js";
 import passport from "./config/passport-setup.js";
 import mongoose from "mongoose";
 
-// Load environment variables first
 dotenv.config();
 
-// Validate required environment variables
 const requiredEnvVars = ["MONGO_URI", "JWT_SECRET", "GOOGLE_CLIENT_ID"];
 
 const missingEnvVars = requiredEnvVars.filter((envVar) => !process.env[envVar]);
