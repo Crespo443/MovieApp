@@ -3,19 +3,38 @@ import {
   addMovie, // Added import for addMovie
   getAllMovies,
   getAllMovieByType,
-  getMovieById
+  getMovieById,
+  updateMovie, // Import updateMovie
+  deleteMovie, // Import deleteMovie
 } from "../controllers/movie.controller.js";
 import {
   addMovieComment,
-  getMovieComments
+  getMovieComments,
 } from "../controllers/comment.controller.js";
 
-import { protectRoute, adminProtectRoute } from "../middleware/auth.middleware.js"; // Added adminProtectRoute
+import {
+  protectRoute,
+  adminProtectRoute,
+} from "../middleware/auth.middleware.js"; // Added adminProtectRoute
 
 const router = express.Router();
 
 // Admin route to add a new movie
 router.post("/admin/movies", protectRoute, adminProtectRoute, addMovie);
+// Admin route to update a movie
+router.put(
+  "/admin/movies/:tmdbId",
+  protectRoute,
+  adminProtectRoute,
+  updateMovie
+);
+// Admin route to delete a movie
+router.delete(
+  "/admin/movies/:tmdbId",
+  protectRoute,
+  adminProtectRoute,
+  deleteMovie
+);
 
 router.get("/", protectRoute, getAllMovies);
 router.get("/by-type/:type", protectRoute, getAllMovieByType);

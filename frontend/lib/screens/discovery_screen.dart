@@ -17,7 +17,7 @@ class _DiscoveryScreenState extends State<DiscoveryScreen> {
   bool _isLoading = true;
   String? _tappedGenre;
   String? _error;
-  Map<String, bool> _genreLoading = {};
+  final Map<String, bool> _genreLoading = {};
 
   @override
   void initState() {
@@ -237,7 +237,7 @@ class _DiscoveryScreenState extends State<DiscoveryScreen> {
             child: Stack(
               fit: StackFit.expand,
               children: [
-                if (hasImage && movie != null)
+                if (hasImage)
                   CachedNetworkImage(
                     imageUrl: movie.posterPath,
                     fit: BoxFit.cover,

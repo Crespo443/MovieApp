@@ -5,7 +5,7 @@ const mapMovieData = (movie) => ({
   title: movie.title,
   description: movie.description,
   thumbnailUrl: movie.posterPath,
-  backdropPath: movie.backdropPath || movie.posterPath, 
+  backdropPath: movie.backdropPath || movie.posterPath,
   videoUrl: movie.videoUrl,
   categories: movie.genre,
   type: Array.isArray(movie.type) ? movie.type : [movie.type].filter(Boolean),
@@ -131,7 +131,7 @@ export const addMovie = async (req, res) => {
       description,
       videoUrl,
       posterPath,
-      backdropPath: backdropPath || posterPath, 
+      backdropPath: backdropPath || posterPath,
       genre,
       type,
       rating,
@@ -158,10 +158,10 @@ export const addMovie = async (req, res) => {
 export const getAllMovieByType = async (req, res) => {
   try {
     const movies = await Movie.find({ type: req.params.type });
-    const mappedMovies = movies.map(mapMovieData); 
+    const mappedMovies = movies.map(mapMovieData);
     res.status(200).json({
       success: true,
-      count: mappedMovies.length, 
+      count: mappedMovies.length,
       data: mappedMovies,
     });
   } catch (error) {
@@ -184,12 +184,64 @@ export const getMovieById = async (req, res) => {
     }
     res.status(200).json({
       success: true,
-      data: mapMovieData(foundMovie), 
+      data: mapMovieData(foundMovie),
     });
   } catch (error) {
     res.status(500).json({
       success: false,
       message: "Failed to fetch movie",
+      error: error.message,
+    });
+  }
+};
+
+export const updateMovie = async (req, res) => {
+  try {
+    const { tmdbId } = req.params;
+    const updateFields = req.body;
+    const updatedMovie = await Movie.findOneAndUpdate(
+      { tmdbId },
+      updateFields,
+      { new: true }
+    );
+    if (!updatedMovie) {
+      return res.status(404).json({
+        success: false,
+        message: "Movie not found",
+      });
+    }
+    res.status(200).json({
+      success: true,
+      message: "Movie updated successfully",
+      data: mapMovieData(updatedMovie),
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: "Failed to update movie",
+      error: error.message,
+    });
+  }
+};
+
+export const deleteMovie = async (req, res) => {
+  try {
+    const { tmdbId } = req.params;
+    const deletedMovie = await Movie.findOneAndDelete({ tmdbId });
+    if (!deletedMovie) {
+      return res.status(404).json({
+        success: false,
+        message: "Movie not found",
+      });
+    }
+    res.status(200).json({
+      success: true,
+      message: "Movie deleted successfully",
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: "Failed to delete movie",
       error: error.message,
     });
   }

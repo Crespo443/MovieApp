@@ -34,8 +34,9 @@ class CommentCard extends StatelessWidget {
               children: [
                 CircleAvatar(
                   // Placeholder for user avatar - replace with actual image if available
-                  child: Text(comment.userName.isNotEmpty ? comment.userName[0].toUpperCase() : 'U'),
                   radius: 18,
+                  // Placeholder for user avatar - replace with actual image if available
+                  child: Text(comment.userName.isNotEmpty ? comment.userName[0].toUpperCase() : 'U'),
                 ),
                 const SizedBox(width: 10),
                 Column(

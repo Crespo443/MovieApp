@@ -29,16 +29,54 @@ class AdminService {
     }
   }
 
-  static Future<List<UserModel>> getAllUsers() async {
-    final response = await http.get(
-      Uri.parse('${ApiService.baseUrl}/users/admin/users'),
-      headers: ApiService.headers,
+  static Future<List<UserModel>> getAllUsers({
+    String search = '',
+    int page = 1,
+    int limit = 20,
+  }) async {
+    final uri = Uri.parse('${ApiService.baseUrl}/users/admin/users').replace(
+      queryParameters: {
+        if (search.isNotEmpty) 'search': search,
+        'page': page.toString(),
+        'limit': limit.toString(),
+      },
     );
+    final response = await http.get(uri, headers: ApiService.headers);
     if (response.statusCode == 200) {
       final json = jsonDecode(response.body);
       return (json['data'] as List).map((u) => UserModel.fromJson(u)).toList();
     } else {
       throw Exception('Failed to load users');
+    }
+  }
+
+  static Future<void> editUser({
+    required String userId,
+    String? name,
+    String? email,
+    String? role,
+  }) async {
+    final response = await http.put(
+      Uri.parse('${ApiService.baseUrl}/users/admin/users/$userId'),
+      headers: ApiService.headers,
+      body: jsonEncode({
+        if (name != null) 'name': name,
+        if (email != null) 'email': email,
+        if (role != null) 'role': role,
+      }),
+    );
+    if (response.statusCode != 200) {
+      throw Exception('Failed to edit user: \n${response.body}');
+    }
+  }
+
+  static Future<void> deleteUser(String userId) async {
+    final response = await http.delete(
+      Uri.parse('${ApiService.baseUrl}/users/admin/users/$userId'),
+      headers: ApiService.headers,
+    );
+    if (response.statusCode != 200) {
+      throw Exception('Failed to delete user: \n${response.body}');
     }
   }
 
@@ -71,7 +109,7 @@ class AdminService {
       }),
     );
     if (response.statusCode != 201) {
-      throw Exception('Failed to add movie: \n' + response.body);
+      throw Exception('Failed to add movie: \n${response.body}');
     }
   }
 }

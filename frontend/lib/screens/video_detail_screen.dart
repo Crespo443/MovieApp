@@ -34,12 +34,12 @@ class _VideoDetailScreenState extends State<VideoDetailScreen>
 
   // New state variables for comments
   List<ReviewModel> _allComments = []; // Changed from _comments
-  Map<String, bool> _expandedReplies = {}; // Tracks expanded state for parent comment IDs
+  final Map<String, bool> _expandedReplies = {}; // Tracks expanded state for parent comment IDs
   String? _replyingToCommentId; // ID of the comment being replied to
   // final TextEditingController _commentController = TextEditingController(); // Already exists
   bool _isLoadingComments = true; // Already exists
   // String? _activelyReplyingToCommentId; // To be removed
-  FocusNode _commentFocusNode = FocusNode();
+  final FocusNode _commentFocusNode = FocusNode();
 
   @override
   void initState() {
@@ -703,7 +703,7 @@ class _VideoDetailScreenState extends State<VideoDetailScreen>
               final topLevelComment = topLevelComments[index];
               final repliesForThisComment =
                   _allComments
-                      .where((reply) => reply?.parentId == topLevelComment.id)
+                      .where((reply) => reply.parentId == topLevelComment.id)
                       .toList();
               final int replyCount = repliesForThisComment.length;
               bool isExpanded = _expandedReplies[topLevelComment.id] ?? false;

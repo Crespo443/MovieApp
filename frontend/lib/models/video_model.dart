@@ -1,4 +1,5 @@
 class VideoModel {
+  final String? id; // Add this line
   final String tmdbId;
   final String title;
   final String description;
@@ -12,6 +13,7 @@ class VideoModel {
   final String releaseDate;
 
   VideoModel({
+    this.id, // Add this line
     required this.tmdbId,
     required this.title,
     required this.description,
@@ -26,9 +28,9 @@ class VideoModel {
   });
 
   factory VideoModel.fromJson(Map<String, dynamic> json) {
-    print('Parsing video JSON: ${json.toString()}');
+    print('Parsing video JSON: \\${json.toString()}');
     String idValue = json['id'] as String? ?? json['tmdbId'] as String? ?? '';
-    print('ID Value: $idValue');
+    print('ID Value: \\${idValue}');
     String title = json['title'] as String? ?? '';
     String description = json['description'] as String? ?? '';
     String posterPath =
@@ -80,6 +82,7 @@ class VideoModel {
     String releaseDate = json['releaseDate'] as String? ?? '';
 
     final videoModel = VideoModel(
+      id: json['id'] as String?, // Add this line
       tmdbId: idValue,
       title: title,
       description: description,
@@ -93,12 +96,13 @@ class VideoModel {
       releaseDate: releaseDate,
     );
 
-    print('Successfully parsed VideoModel: ${videoModel.title}');
+    print('Successfully parsed VideoModel: \\${videoModel.title}');
     return videoModel;
   }
 
   Map<String, dynamic> toJson() {
     return {
+      if (id != null) 'id': id, // Add this line
       'tmdbId': tmdbId,
       'title': title,
       'description': description,

@@ -1,5 +1,5 @@
 <network-security-config>
     <domain-config cleartextTrafficPermitted="true">
-        <domain includeSubdomains="true">10.208.150.1</domain>
+        <domain includeSubdomains="true">https://movie-94vqf1pkd-aprilianocrespo27-1549s-projects.vercel.app/</domain>
     </domain-config>
 </network-security-config>

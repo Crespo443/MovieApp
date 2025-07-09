@@ -1,11 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_video_app/models/dashboard_stats.dart';
 import 'package:flutter_video_app/screens/admin_add_movie_screen.dart';
+import 'package:flutter_video_app/screens/admin_movie_list_screen.dart';
 import 'package:flutter_video_app/screens/admin_user_list_screen.dart';
+import 'package:flutter_video_app/screens/admin_unreplied_comments_screen.dart';
 import 'package:flutter_video_app/services/admin_service.dart';
-import 'package:flutter_video_app/widgets/admin_dashboard/income.dart';
-import 'package:flutter_video_app/widgets/admin_dashboard/new_comments.dart';
-import 'package:flutter_video_app/widgets/admin_dashboard/watching_hours.dart';
 
 class AdminDashboardScreen extends StatefulWidget {
   const AdminDashboardScreen({super.key});
@@ -50,6 +49,18 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                 context,
                 MaterialPageRoute(
                   builder: (context) => const AdminUserListScreen(),
+                ),
+              );
+            },
+          ),
+          IconButton(
+            icon: const Icon(Icons.list_alt),
+            tooltip: 'Manage Movies',
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const AdminMovieListScreen(),
                 ),
               );
             },
@@ -125,7 +136,6 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                   ),
                 ),
                 const SizedBox(height: 8),
-
                 Card(
                   color: Colors.grey[800],
                   child: ListTile(
@@ -146,55 +156,34 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                     ),
                   ),
                 ),
-                const SizedBox(height: 16),
-                ElevatedButton.icon(
-                  icon: const Icon(Icons.delete_forever),
-                  label: const Text('Clear All Watch History'),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.red,
-                    foregroundColor: Colors.white,
+                const SizedBox(height: 8),
+                Card(
+                  color: Colors.red[800],
+                  child: ListTile(
+                    leading: const Icon(
+                      Icons.question_answer,
+                      color: Colors.white,
+                    ),
+                    title: const Text(
+                      'Unreplied Comments',
+                      style: TextStyle(color: Colors.white),
+                    ),
+                    trailing: const Icon(
+                      Icons.arrow_forward_ios,
+                      color: Colors.white,
+                    ),
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder:
+                              (context) => const AdminUnrepliedCommentsScreen(),
+                        ),
+                      );
+                    },
                   ),
-                  onPressed: () async {
-                    final confirmed = await showDialog<bool>(
-                      context: context,
-                      builder:
-                          (context) => AlertDialog(
-                            title: const Text('Confirm'),
-                            content: const Text(
-                              'Are you sure you want to clear all users\' watch history?',
-                            ),
-                            actions: [
-                              TextButton(
-                                onPressed: () => Navigator.pop(context, false),
-                                child: const Text('Cancel'),
-                              ),
-                              TextButton(
-                                onPressed: () => Navigator.pop(context, true),
-                                child: const Text('Yes, Clear'),
-                              ),
-                            ],
-                          ),
-                    );
-                    if (confirmed == true) {
-                      try {
-                        await AdminService.clearAllWatchHistory();
-                        if (mounted) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text('All watch history cleared!'),
-                            ),
-                          );
-                        }
-                      } catch (e) {
-                        if (mounted) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(content: Text('Error: ${e.toString()}')),
-                          );
-                        }
-                      }
-                    }
-                  },
                 ),
+                const SizedBox(height: 16),
               ],
             );
           } else {

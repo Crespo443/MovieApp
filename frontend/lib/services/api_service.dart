@@ -5,7 +5,8 @@ import 'package:flutter_video_app/models/comment_model.dart' show ReviewModel;
 import 'package:flutter_video_app/models/user_model.dart';
 
 class ApiService {
-  static const String baseUrl = 'http://10.208.150.1:4002/api';
+  // static const String baseUrl = 'https://movieapp-lac-six.vercel.app/api';
+  static const String baseUrl = 'http://localhost:4002/api';
   static String? _token;
 
   static void setToken(String token) {
@@ -56,6 +57,34 @@ class ApiService {
       return VideoModel.fromJson(data['data'] as Map<String, dynamic>);
     }
     throw _handleError(response);
+  }
+
+  static Future<VideoModel> updateMovieByAdmin(
+    String movieId,
+    VideoModel movie,
+  ) async {
+    final response = await http.put(
+      Uri.parse('$baseUrl/movies/admin/movies/$movieId'),
+      headers: headers,
+      body: json.encode(movie.toJson()),
+    );
+
+    if (response.statusCode == 200) {
+      final data = json.decode(response.body);
+      return VideoModel.fromJson(data['data'] as Map<String, dynamic>);
+    }
+    throw _handleError(response);
+  }
+
+  static Future<void> deleteMovieByAdmin(String movieId) async {
+    final response = await http.delete(
+      Uri.parse('$baseUrl/movies/admin/movies/$movieId'),
+      headers: headers,
+    );
+
+    if (response.statusCode != 200) {
+      throw _handleError(response);
+    }
   }
 
   static dynamic _handleError(http.Response response) {
@@ -134,7 +163,7 @@ class ApiService {
     };
 
     print('Getting videos with params: $queryParams'); // Debug log
-    print('Using headers: ${headers}'); // Debug log
+    print('Using headers: $headers'); // Debug log
 
     final url = Uri.parse(
       '$baseUrl/movies',
@@ -462,5 +491,29 @@ class ApiService {
       return json.decode(response.body);
     }
     throw _handleError(response);
+  }
+
+  static Future<List<ReviewModel>> getUnrepliedComments() async {
+    final response = await http.get(
+      Uri.parse('$baseUrl/comments/admin/unreplied'),
+      headers: headers,
+    );
+    if (response.statusCode == 200) {
+      final data = json.decode(response.body);
+      return (data['data'] as List)
+          .map((json) => ReviewModel.fromJson(json as Map<String, dynamic>))
+          .toList();
+    }
+    throw _handleError(response);
+  }
+
+  static Future<void> deleteCommentByAdmin(String commentId) async {
+    final response = await http.delete(
+      Uri.parse('$baseUrl/comments/admin/$commentId'),
+      headers: headers,
+    );
+    if (response.statusCode != 200) {
+      throw _handleError(response);
+    }
   }
 }

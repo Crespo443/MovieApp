@@ -50,9 +50,83 @@ export const getMe = async (req, res) => {
   }
 };
 
+// Admin: Update user
+export const updateUserByAdmin = async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const { name, email, role } = req.body;
+    const user = await User.findById(userId);
+    if (!user) {
+      return res
+        .status(404)
+        .json({ success: false, message: "User not found" });
+    }
+    if (name) user.username = name;
+    if (email) user.email = email;
+    if (role) user.role = role;
+    await user.save();
+    res.status(200).json({
+      success: true,
+      message: "User updated successfully",
+      data: {
+        id: user._id,
+        name: user.username,
+        email: user.email,
+        role: user.role,
+        favorites: user.favorites || [],
+        stripeCustomerId: user.stripeCustomerId,
+        subscription: user.subscription,
+        createdAt: user.createdAt,
+      },
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: "Failed to update user",
+      error: error.message,
+    });
+  }
+};
+
+// Admin: Delete user
+export const deleteUserByAdmin = async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const user = await User.findByIdAndDelete(userId);
+    if (!user) {
+      return res
+        .status(404)
+        .json({ success: false, message: "User not found" });
+    }
+    res
+      .status(200)
+      .json({ success: true, message: "User deleted successfully" });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: "Failed to delete user",
+      error: error.message,
+    });
+  }
+};
+
+// Enhance getAllUsers with search and pagination
 export const getAllUsers = async (req, res) => {
   try {
-    const users = await User.find({ role: "customer" });
+    const { search = "", page = 1, limit = 20 } = req.query;
+    const query = {
+      role: "customer",
+      $or: [
+        { username: { $regex: search, $options: "i" } },
+        { email: { $regex: search, $options: "i" } },
+      ],
+    };
+    const skip = (parseInt(page) - 1) * parseInt(limit);
+    const users = await User.find(query)
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(parseInt(limit));
+    const total = await User.countDocuments(query);
     res.status(200).json({
       success: true,
       data: users.map((user) => ({
@@ -63,8 +137,11 @@ export const getAllUsers = async (req, res) => {
         favorites: user.favorites || [],
         stripeCustomerId: user.stripeCustomerId,
         subscription: user.subscription,
-        createdAt: user.createdAt, // <-- include registration date
+        createdAt: user.createdAt,
       })),
+      total,
+      page: parseInt(page),
+      limit: parseInt(limit),
     });
   } catch (error) {
     res.status(500).json({

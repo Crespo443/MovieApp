@@ -1,5 +1,8 @@
 import express from "express";
-import { protectRoute, adminProtectRoute } from "../middleware/auth.middleware.js";
+import {
+  protectRoute,
+  adminProtectRoute,
+} from "../middleware/auth.middleware.js";
 import {
   getAllUsers, // Added import for getAllUsers
   getMe,
@@ -9,12 +12,28 @@ import {
   addToWatchHistory,
   clearWatchHistory,
   updateUsername,
+  updateUserByAdmin, // NEW
+  deleteUserByAdmin, // NEW
 } from "../controllers/user.controller.js";
 
 const router = express.Router();
 
-// Admin route to get all users
+// Admin route to get all users (with search/pagination)
 router.get("/admin/users", protectRoute, adminProtectRoute, getAllUsers);
+// Admin edit user
+router.put(
+  "/admin/users/:userId",
+  protectRoute,
+  adminProtectRoute,
+  updateUserByAdmin
+);
+// Admin delete user
+router.delete(
+  "/admin/users/:userId",
+  protectRoute,
+  adminProtectRoute,
+  deleteUserByAdmin
+);
 
 router.get("/me", protectRoute, getMe);
 router.put("/me/username", protectRoute, updateUsername);
